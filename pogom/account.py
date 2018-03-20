@@ -695,12 +695,11 @@ class AccountSet(object):
         # Yay for thread safety.
         with self.next_lock:
             # Readability.
-            account_set = self.sets[set_name]
+            account_set = random.shuffle(self.sets[set_name])
 
             for i in range(len(account_set)):
-                k = random.randint(0, len(account_set)-1)
                 time.sleep(random.uniform(.1, .2))
-                account = account_set[k]
+                account = account_set[i]
 
                 # Make sure it's not captcha'd.
                 if account.get('captcha', False):
