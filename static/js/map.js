@@ -310,7 +310,7 @@ function _initMap() { // eslint-disable-line
     }
 }
 
-// wrapper function for real initMap (_initMap) to 
+// wrapper function for real initMap (_initMap) to
 // avoid race conditions with custom.js
 function initMap() { // eslint-disable-line no-unused-vars
     setTimeout(_initMap, 100)
