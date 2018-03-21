@@ -230,7 +230,7 @@ function createServiceWorkerReceiver() {
     })
 }
 
-function _initMap() { // eslint-disable-line
+function initMap() { // eslint-disable-line no-unused-vars
     map = new google.maps.Map(document.getElementById('map'), {
         center: {
             lat: Number(getParameterByName('lat')) || centerLat,
@@ -262,16 +262,6 @@ function _initMap() { // eslint-disable-line
             ]
         }
     })
-
-    // Enable clustering.
-    var clusterOptions = {
-        imagePath: 'static/images/cluster/m',
-        maxZoom: Store.get('maxClusterZoomLevel'),
-        zoomOnClick: Store.get('clusterZoomOnClick'),
-        gridSize: Store.get('clusterGridSize')
-    }
-
-    markerCluster = new MarkerClusterer(map, [], clusterOptions)
 
     var styleNoLabels = new google.maps.StyledMapType(noLabelsStyle, {
         name: 'No Labels'
@@ -331,29 +321,42 @@ function _initMap() { // eslint-disable-line
     map.setMapTypeId(Store.get('map_style'))
     map.addListener('idle', updateMap)
 
-    map.addListener('zoom_changed', function () {
-        if (storeZoom === true) {
-            Store.set('zoomLevel', this.getZoom())
-        } else {
-            storeZoom = true
+    setTimeout(function() {
+        
+        // Enable clustering.
+        var clusterOptions = {
+            imagePath: 'static/images/cluster/m',
+            maxZoom: Store.get('maxClusterZoomLevel'),
+            zoomOnClick: Store.get('clusterZoomOnClick'),
+            gridSize: Store.get('clusterGridSize')
         }
 
-        // User scrolled again, reset our timeout.
-        if (redrawTimeout) {
-            clearTimeout(redrawTimeout)
-            redrawTimeout = null
-        }
+        markerCluster = new MarkerClusterer(map, [], clusterOptions)
 
-        // Don't redraw constantly even if the user scrolls multiple times,
-        // just add it on a timer.
-        redrawTimeout = setTimeout(function () {
-            redrawPokemon(mapData.pokemons)
-            redrawPokemon(mapData.lurePokemons)
+        map.addListener('zoom_changed', function () {
+            if (storeZoom === true) {
+                Store.set('zoomLevel', this.getZoom())
+            } else {
+                storeZoom = true
+            }
 
-            // We're done processing the list. Repaint.
-            markerCluster.repaint()
-        }, 500)
-    })
+            // User scrolled again, reset our timeout.
+            if (redrawTimeout) {
+                clearTimeout(redrawTimeout)
+                redrawTimeout = null
+            }
+
+            // Don't redraw constantly even if the user scrolls multiple times,
+            // just add it on a timer.
+            redrawTimeout = setTimeout(function () {
+                redrawPokemon(mapData.pokemons)
+                redrawPokemon(mapData.lurePokemons)
+
+                // We're done processing the list. Repaint.
+                markerCluster.repaint()
+            }, 500)
+        })
+    }, 100)
 
     const showSearchMarker = Store.get('showSearchMarker')
     const showLocationMarker = Store.get('showLocationMarker')
@@ -385,12 +388,6 @@ function _initMap() { // eslint-disable-line
     if (Push._agents.chrome.isSupported()) {
         createServiceWorkerReceiver()
     }
-}
-
-// wrapper function for real initMap (_initMap) to
-// avoid race conditions with custom.js
-function initMap() { // eslint-disable-line no-unused-vars
-    setTimeout(_initMap, 100)
 }
 
 function updateLocationMarker(style) {
